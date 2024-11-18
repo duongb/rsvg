@@ -55,40 +55,43 @@ def load_weights(model, load_path):
 
 
 class MGVLF(nn.Module):
-    def __init__(self, bert_model='bert-base-uncased',tunebert=True, args=None):
+    def __init__(self, bert_model='bert-base-uncased', tunebert=True, args=None):
         super(MGVLF, self).__init__()
         self.tunebert = tunebert
-        if bert_model=='bert-base-uncased':
-            self.textdim=768
+        if bert_model == 'bert-base-uncased':
+            self.textdim = 768
         else:
-            self.textdim=1024
+            self.textdim = 1024
 
         # Visual model
         self.visumodel = build_CNN_MGVLF(args)
         self.visumodel = load_weights(self.visumodel, './saved_models/detr-r50-e632da11.pth')
-        
-        # Text model
-        self.textmodel = BertModel.from_pretrained('bert-base-uncased')
+
+        # Text model (ensure hidden states are returned)
+        self.textmodel = BertModel.from_pretrained('bert-base-uncased', output_hidden_states=True)
 
         # Multimodal Fusion Module
         self.vlmodel = build_VLFusion(args)
         self.vlmodel = load_weights(self.vlmodel, './saved_models/detr-r50-e632da11.pth')
-        
+
         # Localization Module
         self.Prediction_Head = torch.nn.Sequential(
-          nn.Linear(256, 256),
-          nn.ReLU(),
-          nn.Linear(256, 4),)
+            nn.Linear(256, 256),
+            nn.ReLU(),
+            nn.Linear(256, 4),
+        )
         for p in self.Prediction_Head.parameters():
             if p.dim() > 1:
                 nn.init.xavier_uniform_(p)
 
     def forward(self, image, mask, word_id, word_mask):
         # Multimodal Encoder —— Language
-        all_encoder_layers, pooled_output = self.textmodel(word_id, token_type_ids=None, attention_mask=word_mask)
-        sentence_frature = pooled_output
+        outputs = self.textmodel(word_id, token_type_ids=None, attention_mask=word_mask)
+        all_encoder_layers = outputs.hidden_states  # Access hidden states (not `all_encoder_layers`)
+        sentence_frature = outputs.pooler_output  # Typically used for classification tasks
 
-        fl = (all_encoder_layers[-1] + all_encoder_layers[-2]+ all_encoder_layers[-3] + all_encoder_layers[-4])/4
+        # Take the average of the last 4 encoder layers
+        fl = (all_encoder_layers[-1] + all_encoder_layers[-2] + all_encoder_layers[-3] + all_encoder_layers[-4]) / 4
         if not self.tunebert:  # fix bert during training
             fl = fl.detach()
 
@@ -99,7 +102,8 @@ class MGVLF(nn.Module):
         x = self.vlmodel(fv, fl)
 
         # Localization Module
-        outbox = self.Prediction_Head(x)  # (x; y;w; h)
-        outbox = outbox.sigmoid()*2.-0.5  # (x; y; x; y)
+        outbox = self.Prediction_Head(x)  # (x; y; w; h)
+        outbox = outbox.sigmoid() * 2. - 0.5  # (x; y; x; y)
 
         return outbox
+
