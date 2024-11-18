@@ -19,7 +19,7 @@ from utils.transforms import letterbox
 
 import matplotlib.pyplot as plt
 import torch.utils.data as data
-from pytorch_pretrained_bert.tokenization import BertTokenizer
+from transformers import BertTokenizer
 import random
 
 def filelist(root, file_type):
