@@ -22,8 +22,7 @@ import json
 import re
 import time
 from tqdm import tqdm
-from pytorch_pretrained_bert.tokenization import BertTokenizer
-from pytorch_pretrained_bert.modeling import BertModel
+from transformers import BertTokenizer, BertModel
 
 def generate_coord(batch, height, width):
     xv, yv = torch.meshgrid([torch.arange(0,height), torch.arange(0,width)])
