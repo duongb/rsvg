@@ -22,7 +22,8 @@ import json
 import re
 import time
 from tqdm import tqdm
-from transformers import BertTokenizer, BertModel
+#from transformers import BertTokenizer, BertModel
+from transformers import AutoModel, AutoTokenizer
 
 def generate_coord(batch, height, width):
     xv, yv = torch.meshgrid([torch.arange(0,height), torch.arange(0,width)])
@@ -55,10 +56,10 @@ def load_weights(model, load_path):
 
 
 class MGVLF(nn.Module):
-    def __init__(self, bert_model='bert-base-uncased', tunebert=True, args=None):
+    def __init__(self, bert_model='vinai/phobert-base-v2', tunebert=True, args=None):
         super(MGVLF, self).__init__()
         self.tunebert = tunebert
-        if bert_model == 'bert-base-uncased':
+        if bert_model == 'bert-base-uncased' or bert_model == 'vinai/phobert-base-v2':
             self.textdim = 768
         else:
             self.textdim = 1024
@@ -68,7 +69,7 @@ class MGVLF(nn.Module):
         self.visumodel = load_weights(self.visumodel, './saved_models/detr-r50-e632da11.pth')
 
         # Text model (ensure hidden states are returned)
-        self.textmodel = BertModel.from_pretrained('bert-base-uncased', output_hidden_states=True)
+        self.textmodel = AutoModel.from_pretrained('vinai/phobert-base', output_hidden_states=True)
 
         # Multimodal Fusion Module
         self.vlmodel = build_VLFusion(args)
@@ -86,7 +87,7 @@ class MGVLF(nn.Module):
 
     def forward(self, image, mask, word_id, word_mask):
         # Multimodal Encoder —— Language
-        outputs = self.textmodel(word_id, token_type_ids=None, attention_mask=word_mask)
+        outputs = self.textmodel(word_id, attention_mask=word_mask)
         all_encoder_layers = outputs.hidden_states  # Access hidden states (not `all_encoder_layers`)
         sentence_frature = outputs.pooler_output  # Typically used for classification tasks
 
