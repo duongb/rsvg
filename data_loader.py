@@ -40,7 +40,7 @@ class RSVGDataset(data.Dataset):
         self.query_len = max_query_len  # 40
         self.tokenizer = AutoTokenizer.from_pretrained(bert_model, do_lower_case=True)
 
-        file = open('kaggle/input/diorvn/dior/' + split + '.txt', "r").readlines()
+        file = open('/kaggle/input/diorvn/dior/' + split + '.txt', "r").readlines()
         Index = [int(index.strip('\n')) for index in file]
         count = 0
         annotations = filelist(anno_path, '.xml')
