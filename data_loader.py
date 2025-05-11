@@ -19,7 +19,8 @@ from utils.transforms import letterbox
 
 import matplotlib.pyplot as plt
 import torch.utils.data as data
-from transformers import BertTokenizer
+#from transformers import BertTokenizer
+from transformers import AutoTokenizer
 import random
 
 def filelist(root, file_type):
@@ -27,7 +28,7 @@ def filelist(root, file_type):
 
 class RSVGDataset(data.Dataset):
     def __init__(self, images_path, anno_path, imsize=640, transform= None, augment= False,
-                 split='train', testmode=False,max_query_len=40,  bert_model='bert-base-uncased'):
+                 split='train', testmode=False,max_query_len=40,  bert_model='vinai/phobert-base-v2'):
         self.images = []
         self.images_path = images_path
         self.anno_path = anno_path
@@ -37,9 +38,9 @@ class RSVGDataset(data.Dataset):
         self.split = split
         self.testmode = testmode
         self.query_len = max_query_len  # 40
-        self.tokenizer = BertTokenizer.from_pretrained(bert_model, do_lower_case=True)
+        self.tokenizer = AutoTokenizer.from_pretrained(bert_model, do_lower_case=True)
 
-        file = open('/kaggle/input/dior-rsvg/DIOR_RSVG/' + split + '.txt', "r").readlines()
+        file = open('/kaggle/input/diorvn/dior/' + split + '.txt', "r").readlines()
         Index = [int(index.strip('\n')) for index in file]
         count = 0
         annotations = filelist(anno_path, '.xml')
