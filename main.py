@@ -43,11 +43,11 @@ def main():
     parser.add_argument('--time', default=40, type=int,
                         help='maximum time steps (lang length) per batch')
     parser.add_argument('--gpu', default='0', help='gpu id')
-    parser.add_argument('--workers', default=0, type=int, help='num workers for data loading')
+    parser.add_argument('--workers', default=4, type=int, help='num workers for data loading')
     parser.add_argument('--nb_epoch', default=150, type=int, help='training epoch')
     parser.add_argument('--lr', default=1e-4, type=float, help='learning rate')
     parser.add_argument('--lr_dec', default=0.1, type=float, help='decline of learning rate')
-    parser.add_argument('--batch_size', default=10, type=int, help='batch size')
+    parser.add_argument('--batch_size', default=16, type=int, help='batch size')
     parser.add_argument('--resume', default='', type=str, metavar='PATH',  #
                         help='path to latest checkpoint (default: none)')
     parser.add_argument('--pretrain', default='', type=str, metavar='PATH',
@@ -56,7 +56,7 @@ def main():
                         metavar='N', help='print frequency (default: 1e3)')
     parser.add_argument('--savename', default='default', type=str, help='Name head for saved model')
     parser.add_argument('--seed', default=13, type=int, help='random seed')
-    parser.add_argument('--bert_model', default='bert-base-uncased', type=str, help='bert model')
+    parser.add_argument('--bert_model', default='vinai/phobert-base-v2', type=str, help='bert model')
     parser.add_argument('--test', dest='test', default=False, action='store_true', help='train')
     # parser.add_argument('--test', dest='test', default=True, action='store_true', help='test')
     parser.add_argument('--tunebert', dest='tunebert', default=True, action='store_true', help='if tunebert')
